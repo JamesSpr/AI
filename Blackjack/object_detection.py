@@ -20,7 +20,31 @@ class Card:
         self.value = ""
         self.suit = ""
 
-def extract_cards(img, min_area_threshold=9500.0, max_area_threshold=10500.0):
+def get_edges(img):
+    # Get Edges
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blur = cv2.bilateralFilter(gray, 10, 15, 15)
+    edges = cv2.Canny(blur, 50, 150, False)
+
+    return edges
+
+def morphological_transform(img):
+    # # Dilate Edges to close shape
+    kernel = np.ones((2,2), np.uint8)
+    dilate = cv2.dilate(img.copy(), kernel, iterations=1)
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1,2))
+    # morphology_img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel,iterations=1)
+
+    return dilate
+
+def get_contours(img):
+        # Get external contours from edges
+    contours, _ = cv2.findContours(img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    sorted(contours, key=cv2.contourArea, reverse=True)
+
+    return contours
+
+def extract_cards(img, min_area_threshold, max_area_threshold):
     """ Extract the cards within a provided image
     
     Parameters
@@ -36,18 +60,9 @@ def extract_cards(img, min_area_threshold=9500.0, max_area_threshold=10500.0):
         All of the detected cards in the frame with the positional data
     """
 
-    # Get Edges from image
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blur = cv2.bilateralFilter(gray, 10, 15, 15)
-    edges = cv2.Canny(blur, 50, 150, False)
-    
-    # Dilate Edges to close shape
-    kernel = np.ones((2,2), np.uint8)
-    dilate = cv2.dilate(edges.copy(), kernel, iterations=1)
-
-    # Get external contours from edges
-    contours, _ = cv2.findContours(dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    sorted(contours, key=cv2.contourArea, reverse=True)
+    edges = get_edges(img)
+    mt = morphological_transform(edges)
+    contours = get_contours(mt)    
     
     # Card orientation arrays for transformation to width and height
     width, height = 200, 250
@@ -71,7 +86,7 @@ def extract_cards(img, min_area_threshold=9500.0, max_area_threshold=10500.0):
             else:
                 M = cv2.getPerspectiveTransform(np.float32(box), rotatedOrientation)
                 
-            warp = cv2.warpPerspective(img, M, (width, height))
+            warp = cv2.warpPerspective(img, M, (width, height), flags=cv2.INTER_NEAREST)
             cards.append(Card(x, y, w, h, contour, warp))
 
     return cards
@@ -87,18 +102,9 @@ def calibrate_card_area(img, min=0, max=0):
         max: float
             max_area_threshold
     """
-    # Get Edges from image
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blur = cv2.bilateralFilter(gray, 10, 15, 15)
-    edges = cv2.Canny(blur, 50, 150, False)
-    
-    # Dilate Edges to close shape
-    kernel = np.ones((2,2), np.uint8)
-    dilate = cv2.dilate(edges.copy(), kernel, iterations=1)
-
-    # Get external contours from edges
-    contours, _ = cv2.findContours(dilate.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    sorted(contours, key=cv2.contourArea, reverse=True)
+    edges = get_edges(img)
+    mt = morphological_transform(edges)
+    contours = get_contours(mt)    
 
     min_area = sys.maxsize
     max_area = 0
@@ -134,9 +140,10 @@ def calibrate_card_area(img, min=0, max=0):
             counter += 1
     
     # Area Calculations
-    average_area = average_area // counter
-    area_diff = max_area - min_area
-    min = average_area - area_diff
-    max = average_area + area_diff
+    if counter > 0:
+        average_area = average_area // counter
+        area_diff = max_area - min_area
+        min = average_area - area_diff
+        max = average_area + area_diff
 
     return img, min, max

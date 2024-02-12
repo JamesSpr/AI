@@ -39,9 +39,9 @@ def augment_dataset(card_path:str, output_path:str) -> None:
             raise OSError(error)
     
     total_progress = 2
-    total_progress = total_progress + total_progress * 5
-    total_progress = total_progress + total_progress * 5
-    total_progress = total_progress + total_progress * 7
+    total_progress = total_progress + total_progress * 10
+    total_progress = total_progress + total_progress * 8
+    total_progress = total_progress + total_progress * 8
     total_progress = total_progress * len(os.listdir((card_path)))
 
     counter = 1
@@ -71,7 +71,7 @@ def augment_dataset(card_path:str, output_path:str) -> None:
         for folder in dirs:
             for file in os.listdir(f"{output_path}\\{folder}"):
                 img = Image.open(f"{output_path}\\{folder}\\{file}")
-                for val in np.arange(0.6, 1.6, 0.2):
+                for val in np.arange(0.6, 1.6, 0.1):
                     enhancer = ImageEnhance.Brightness(img)
                     enhanced_img = enhancer.enhance(val)
                     enhanced_img.save(f"{output_path}\\{folder}\\bright-{str(round((val), 1))}-{file}")
@@ -84,7 +84,7 @@ def augment_dataset(card_path:str, output_path:str) -> None:
         for folder in dirs:    
             for file in os.listdir(f"{output_path}\\{folder}"):
                 img = Image.open(f"{output_path}\\{folder}\\{file}")
-                for val in np.arange(0.2, 1.7, 0.3):
+                for val in np.arange(0.2, 1.6, 0.2):
                     enhancer = ImageEnhance.Sharpness(img)
                     enhanced_img = enhancer.enhance(val)
                     enhanced_img.save(f"{output_path}\\{folder}\\sharp-{str(round((val), 1))}-{file}")
@@ -95,6 +95,7 @@ def augment_dataset(card_path:str, output_path:str) -> None:
     # Colour temp
     # https://stackoverflow.com/questions/11884544/setting-color-temperature-for-a-given-image-like-in-photoshop - Colour temperature converter
     kelvin_table = {
+        3000: (255,180,107),
         4000: (255,209,163),
         5000: (255,228,206),
         6000: (255,243,239),

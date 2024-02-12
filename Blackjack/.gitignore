@@ -1,2 +1,5 @@
-data/augmented/
-data/dataset/
+data/*
+!data/cards
+
+models/*
+!models/example.h5

@@ -16,8 +16,11 @@ The cards can not be overlapping or partially in the captured area.
 - Camera or Webcam  
     **Experimental Setup Specification**
     - Logitech C505 Webcam
-    - Positioned ~620mm above playing space
+    - Positioned ~570mm above playing space
+    - Sheet layed down to reduce background noise
 - Python 3.8.10 
+- Tensorflow 2.10
+- OpenCV-Python
 
 ## Run with Calibration
 1. Setup your physical environment to have a camera pointing at a playing area large enough to have ~ 2 x 6 cards with space between all of the cards.
@@ -70,6 +73,22 @@ The feature extraction utilises OpenCV-Python for the following:
 - Perspective Transformation
 
 ### Image Classification
+
+
+#### Requirements
+##### GPU Usage  
+https://www.tensorflow.org/install/pip  
+https://www.tensorflow.org/install/source#gpu
+
+The following NVIDIA® software are only required for GPU support.
+>- NVIDIA® GPU drivers version 450.80.02 or higher.
+>- [CUDA® Toolkit 11.2](https://developer.nvidia.com/cuda-11.2.0-download-archive)  
+>   - [Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html)
+>- [cuDNN SDK 8.2.1](https://developer.nvidia.com/rdp/cudnn-archive)  
+>   - Nvidia Developer Account Required
+>   - [Installation Guide](https://docs.nvidia.com/deeplearning/cudnn/installation/windows.html)
+>- (Optional) TensorRT to improve latency and throughput for inference.
+
 
 
 ## Reinforcement Learning
